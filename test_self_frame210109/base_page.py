@@ -1,15 +1,22 @@
+import logging
+import yaml
 from appium.webdriver.common.mobileby import MobileBy
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from test_self_frame210109.black_handle import black_wrapper
 
-
 class Black:
     def __init__(self):
         pass
 
 class BasePage:
+    FIND='find'
+    ACTION='action'
+    FIND_AND_CLICK='find_and_click'
+    SEND='send'
+    CONTENT='content'
+
     def __init__(self,driver:WebDriver=None):
         # :WebDriver是为了注解，在后续调用中能提示查找到
         self.driver=driver
@@ -41,6 +48,8 @@ class BasePage:
                                  'scrollable(true).instance(0)).'
                                  'scrollIntoView(new UiSelector().'
                                  f'text("{text}").instance(0));')
+    def send(self,by,locator,content):
+        return self.driver.find_element(by,locator).send_keys(content)
 
     def swip_find(self,by,locator):
         self.driver.implicitly_wait(1)
@@ -71,5 +80,23 @@ class BasePage:
 
     def get_toast_text(self):
         result=self.find(MobileBy.XPATH,"//*[@class='android.widget.Toast']").text
+        logging.info(result)
         return result
 
+    def load(self,yaml_path):
+        with open(yaml_path,encoding='utf-8') as f:
+            data=yaml.load(f)
+        # step: find,action
+        for step in data:
+            # todo:关键字可变问题——把常量定义成类变量
+            xpath_expr=step.get(self.FIND)
+            action=step.get(self.ACTION)
+            if action==self.FIND_AND_CLICK:
+                self.find_and_click(By.XPATH,xpath_expr)
+            elif action==self.SEND:
+                content=step.get(self.CONTENT)
+                self.send(By.XPATH,xpath_expr,content)
+
+
+    def screenshot(self,pic_path):
+        self.driver.save_screenshot(pic_path)

@@ -1,8 +1,11 @@
-from test_self_frame210109.app import App
+import pytest
 
+from test_self_frame210109.app import App
 
 class TestSearch:
     def setup(self):
         self.app=App()
+
+    # @pytest.mark.parametrize('','')
     def test_search(self):
         self.app.start().start().goto_main().goto_market().goto_search().search()
